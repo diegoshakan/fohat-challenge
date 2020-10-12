@@ -25,6 +25,21 @@ class CreateCompany(graphene.Mutation):
 
       return CreateCompany(company=company)
 
+class UpdateCompany(graphene.Mutation):
+    class Arguments:
+      id = graphene.ID()
+      name = graphene.String(required=True)
+      cnpj = graphene.String()
+
+    ok = graphene.Boolean()
+
+    def mutate(self, info, name=None, cnpj=None, **kwargs):
+      company = Company.objects.get(pk=kwargs["id"])
+      company.name = name if name is not None else company.name
+      company.cnpj = cnpj if cnpj is not None else company.cnpj
+      company.save()
+      return UpdateCompany(company=company)
+
 class DeleteCompany(graphene.Mutation):
     ok = graphene.Boolean()
 
@@ -95,5 +110,6 @@ class Mutation(graphene.ObjectType):
     create_employee = CreateEmployee.Field()
     delete_company = DeleteCompany.Field()
     delete_employee = DeleteEmployee.Field()
+    update_company = UpdateCompany.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
