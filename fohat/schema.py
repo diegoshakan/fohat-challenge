@@ -21,14 +21,52 @@ class CreateCompany(graphene.Mutation):
         name=name,
         cnpj=cnpj
       )
-      company.save
+      company.save()
 
       return CreateCompany(company=company)
+
+class DeleteCompany(graphene.Mutation):
+    ok = graphene.Boolean()
+
+    class Arguments:
+        id = graphene.ID()
+
+    def mutate(self, info, **kwargs):
+        obj = Company.objects.get(pk=kwargs["id"])
+        obj.delete()
+        return DeleteCompany(ok=True)
 
 class EmployeeType(DjangoObjectType):
   class Meta:
     model = Employee
     fields = ("id", "name", "cpf")
+
+class CreateEmployee(graphene.Mutation):
+    employee = graphene.Field(EmployeeType)
+    
+    class Arguments:
+      name = graphene.String(required=True)
+      cpf = graphene.String(required=True)
+
+    def mutate(self, info, name, cpf):
+      employee = Employee(
+        name=name,
+        cpf=cpf
+      )
+      employee.save()
+
+      return CreateEmployee(employee=employee)
+
+class DeleteEmployee(graphene.Mutation):
+    ok = graphene.Boolean()
+
+    class Arguments:
+        id = graphene.ID()
+
+    def mutate(self, info, **kwargs):
+        obj = Employee.objects.get(pk=kwargs["id"])
+        obj.delete()
+        return DeleteEmployee(ok=True)
 
 class Query(graphene.ObjectType):
   companies = graphene.List(CompanyType)
@@ -42,5 +80,8 @@ class Query(graphene.ObjectType):
 
 class Mutation(graphene.ObjectType):
     create_company = CreateCompany.Field()
+    create_employee = CreateEmployee.Field()
+    delete_company = DeleteCompany.Field()
+    delete_employee = DeleteEmployee.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
