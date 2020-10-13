@@ -28,15 +28,15 @@ class CreateCompany(graphene.Mutation):
 class UpdateCompany(graphene.Mutation):
     class Arguments:
       id = graphene.ID()
-      name = graphene.String(required=True)
-      cnpj = graphene.String()
+  name = graphene.String(required=False)
+      cnpj = graphene.String(required=False)
 
-    ok = graphene.Boolean()
+    company = graphene.Field(CompanyType)
 
-    def mutate(self, info, name=None, cnpj=None, **kwargs):
-      company = Company.objects.get(pk=kwargs["id"])
-      company.name = name if name is not None else company.name
-      company.cnpj = cnpj if cnpj is not None else company.cnpj
+    def mutate(self, info, id, name, cnpj):
+      company = Company.objects.get(pk=id)
+      company.name = name
+      company.cnpj = cnpj
       company.save()
       return UpdateCompany(company=company)
 
@@ -72,6 +72,21 @@ class CreateEmployee(graphene.Mutation):
 
       return CreateEmployee(employee=employee)
 
+class UpdateEmployee(graphene.Mutation):
+    class Arguments:
+      id = graphene.ID()
+      name = graphene.String(required=False)
+      cpf = graphene.String(required=False)
+
+    employee = graphene.Field(EmployeeType)
+
+    def mutate(self, info, id, name, cpf):
+      employee = Employee.objects.get(pk=id)
+      employee.name = name
+      employee.cpf = cpf
+      employee.save()
+      return UpdateEmployee(employee=employee)
+
 class DeleteEmployee(graphene.Mutation):
     ok = graphene.Boolean()
 
@@ -85,22 +100,22 @@ class DeleteEmployee(graphene.Mutation):
 
 class Query(graphene.ObjectType):
   company = graphene.Field(CompanyType, id=graphene.Int())
-  companies = graphene.List(CompanyType)
+  all_companies = graphene.List(CompanyType)
   employee = graphene.Field(EmployeeType, id=graphene.Int())
-  employees = graphene.List(EmployeeType)
+  all_employees = graphene.List(EmployeeType)
 
   def resolve_company(self, info, **kwargs):
     id = kwargs.get("id")
-    if id is not None:
-        return Company.objects.get(id=id)
+    if id:
+      return Company.objects.get(id=id)
   
-  def resolve_companies(self, info, **kwargs):
+  def resolve_all_companies(self, info, **kwargs):
     return Company.objects.all()
 
   def resolve_employee(self, info, **kwargs):
     id = kwargs.get("id")
-    if id is not None:
-        return Employee.objects.get(id=id)
+    if id:
+      return Employee.objects.get(id=id)
   
   def resolve_all_employees(self, info, **kwargs):
     return Employee.objects.all()
@@ -111,5 +126,6 @@ class Mutation(graphene.ObjectType):
     delete_company = DeleteCompany.Field()
     delete_employee = DeleteEmployee.Field()
     update_company = UpdateCompany.Field()
+    update_employee = UpdateEmployee.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
