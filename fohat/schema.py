@@ -28,8 +28,8 @@ class CreateCompany(graphene.Mutation):
 class UpdateCompany(graphene.Mutation):
     class Arguments:
       id = graphene.ID()
-  name = graphene.String(required=False)
-      cnpj = graphene.String(required=False)
+      name = graphene.String(required=True)
+      cnpj = graphene.String(required=True)
 
     company = graphene.Field(CompanyType)
 
@@ -75,8 +75,8 @@ class CreateEmployee(graphene.Mutation):
 class UpdateEmployee(graphene.Mutation):
     class Arguments:
       id = graphene.ID()
-      name = graphene.String(required=False)
-      cpf = graphene.String(required=False)
+      name = graphene.String(required=True)
+      cpf = graphene.String(required=True)
 
     employee = graphene.Field(EmployeeType)
 
